@@ -74,13 +74,12 @@
       </template>
     </el-dialog>
 
-    <!-- 分配角色弹窗 预留 -->
-        <!-- 分配角色弹窗 -->
+    <!-- 分配角色弹窗 -->
     <el-dialog v-model="assignDialogVisible" title="分配角色" width="520px">
       <p>用户：{{currentRow?.username}}</p>
       <el-form label-width="80px">
         <el-form-item label="选择角色">
-          <!-- 多选下拉，value存id，页面展示角色名称 -->
+          <!-- v-if等待选项数据回来才渲染select，解决选中显示数字id问题 -->
           <el-select
             v-model="assignRoleIdList"
             multiple
@@ -95,7 +94,6 @@
               :value="item.id"
             />
           </el-select>
-          <!-- 加载中占位 -->
           <span v-else>加载角色选项...</span>
         </el-form-item>
       </el-form>
@@ -236,17 +234,17 @@ async function handleDelete(row){
 }
 
 // 打开分配角色弹窗
-// 打开分配角色弹窗
 async function openAssignRole(row){
   currentRow.value = row
   assignDialogVisible.value = true
   assignRoleIdList.value = []
+  allRoleOptions.value = []
 
-  // 加载全部角色下拉选项
   const roleRes = await getRoleOption()
   allRoleOptions.value = roleRes.data
 
-  // 查询该用户已经分配的角色ID，做回显
+  await nextTick()
+
   const assignRes = await getRoleIdsByUserId(row.id)
   assignRoleIdList.value = assignRes.data
 }

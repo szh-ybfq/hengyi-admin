@@ -9,6 +9,10 @@ const service = axios.create({
   timeout: 10000
 })
 
+
+
+
+
 // 请求拦截器：（在到达后业务代码前）
 /* 
     作用：每次发送请求【之前】统一处理, 自动从本地存储拿出 token，塞进请求头，不用每个接口手动写 token；
@@ -24,16 +28,27 @@ service.interceptors.request.use(config => {
   return config
 })
 
+
+
+
+
+
 // 响应拦截器:  （在到达前端业务代码前）
 //      作用：直接把 res.data 返回，页面不用多层取值
 service.interceptors.response.use(res=>{
-  return res.data
+  const data = res.data
+  // 新增：判断业务码，非200代表业务失败，手动抛出异常给页面catch
+  if(data.code !== 200){
+    return Promise.reject({
+      response: { data }
+    })
+  }
+  return data
 }, err=>{
-  // 判断响应状态码
+  // 原有网络/状态码异常逻辑不变
   if (err.response?.status === 401) {
     ElMessage.warning('登录已失效，请重新登录')
     localStorage.removeItem('token')
-    // 跳转到登录页
     router.push('/login')
   } else {
     ElMessage.error('网络请求失败')

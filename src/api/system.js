@@ -70,6 +70,7 @@ export function assignRole(data) {
   })
 }
 
+
 // 2 角色管理接口 
 export function getRoleOption() {// 获取角色列表(下拉选项)
   return request({
@@ -118,7 +119,6 @@ export function assignMenu(data) {
     data
   })
 }
-
 // 获取某个角色已分配的菜单id列表（回显用）
 export function getMenuIdsByRoleId(roleId) {
   return request({
@@ -126,6 +126,7 @@ export function getMenuIdsByRoleId(roleId) {
     method: 'get'
   })
 }
+
 
 // 3 菜单管理接口 
     // 获取全部菜单
@@ -135,14 +136,13 @@ export function getMenuTree() {
     method: 'get'
   })
 }
-    //  登录获取当前用户菜单（侧边栏动态路由核心） 
+//  登录获取当前用户菜单（侧边栏动态路由核心） 
 export function getLoginUserMenu() {
   return request({
     url: '/admin/api/v1/menu/user/tree',
     method: 'get'
   })
 }
-
 export function getMenuInfo(id) {
   return request({
     url: `/admin/api/v1/menu/${id}`,
@@ -167,6 +167,114 @@ export function delMenu(id) {
   return request({
     url: `/admin/api/v1/menu/${id}`,
     method: 'delete'
+  })
+}
+
+
+// 4 商品分类接口 
+// 获取分类树
+export function getCategoryTree() {
+  return request({
+    url: '/admin/api/v1/product/category/tree',
+    method: 'get'
+  })
+}
+// 获取分类下拉选项
+export function getCategoryOption() {
+  return request({
+    url: '/admin/api/v1/product/category/option',
+    method: 'get'
+  })
+}
+// 获取分类详情
+export function getCategoryInfo(id) {
+  return request({
+    url: `/admin/api/v1/product/category/${id}`,
+    method: 'get'
+  })
+}
+// 新增分类
+export function addCategory(data) {
+  return request({
+    url: '/admin/api/v1/product/category/add',
+    method: 'post',
+    data
+  })
+}
+// 编辑分类
+export function updateCategory(data) {
+  return request({
+    url: '/admin/api/v1/product/category/edit',
+    method: 'put',
+    data
+  })
+}
+// 删除分类
+export function delCategory(id) {
+  return request({
+    url: `/admin/api/v1/product/category/${id}`,
+    method: 'delete'
+  })
+}
+
+
+// 5 SPU商品接口 
+export function getSpuPage(params) {
+  return request({
+    url: '/admin/api/v1/product/spu/page',
+    method: 'get',
+    params
+  })
+}
+export function getSpuInfo(id) {
+  return request({
+    url: `/admin/api/v1/product/spu/${id}`,
+    method: 'get'
+  })
+}
+export function addSpu(data) {
+  return request({
+    url: '/admin/api/v1/product/spu/add',
+    method: 'post',
+    data
+  })
+}
+export function updateSpu(data) {
+  return request({
+    url: '/admin/api/v1/product/spu/edit',
+    method: 'put',
+    data
+  })
+}
+export function delSpu(id) {
+  return request({
+    url: `/admin/api/v1/product/spu/${id}`,
+    method: 'delete'
+  })
+}
+
+// 6 后台文件管理
+export function uploadImage(data) {
+  return request({
+    url: `/admin/api/v1/file/upload/image`,
+    method: 'post',
+    data
+  })
+}
+export function uploadImages(data) {
+  return request({
+    url: `/admin/api/v1/file/upload/images`,
+    method: 'post',
+    data
+  })
+}
+export function deleteImage(fileUrl) {
+  return request({
+    url: `/admin/api/v1/product/spu/image/delete`,
+    method: 'delete',
+    params: {
+      fileUrl: fileUrl
+    }
   })
 }
 

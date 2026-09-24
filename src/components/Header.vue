@@ -2,7 +2,7 @@
   <el-header
     style="background:#fff;border-bottom:1px solid #e4e7ed;display:flex;justify-content:space-between;align-items:center;padding:0 20px;height: 60px;"
   >
-    <div>后台管理系统</div>
+    <div style="font-weight: 700;font-size: 30px;">&nbsp;&nbsp;恒宜系统</div>
     <div>
       <el-dropdown @command="handleCommand">
         <span class="el-dropdown-link">

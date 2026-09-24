@@ -19,7 +19,7 @@ export const constantRoutes = [
       {
         path: '/dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/system/dashboard/Index.vue'),
+        component: () => import('@/views/system/dashboard/Index.vue'),  
         meta: { title: '首页' }
       }
     ]

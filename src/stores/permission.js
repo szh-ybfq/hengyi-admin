@@ -8,24 +8,25 @@ const componentMap = {
   'system/role/index': () => import('@/views/system/role/index.vue'),
   'system/menu/index': () => import('@/views/system/menu/index.vue'),
   'dashboard/index': () => import('@/views/system/dashboard/Index.vue'),
+  'system/product/category/index': () => import('@/views/system/product/category/index.vue'),
+  'system/product/spu/index': () => import('@/views/system/product/spu/index.vue'),
 }
+
 
 // 后端菜单树 → 转换成路由规则
 function buildRoutes(menuList) {
   const res = []
-  // 只处理 M目录、C菜单，跳过F按钮权限
   menuList.filter(item => item.menuType !== 'F').forEach(item => {
     const route = {
       path: item.path,
       name: item.menuName,
-      // 查表获取组件，不再拼接import字符串
-      component: componentMap[item.component],
+      // 取不到赋值null，避免component为undefined
+      component: componentMap[item.component] ?? null,
       meta: {
         title: item.menuName,
         icon: item.icon
       }
     }
-    // 递归子菜单，子列表同样过滤按钮
     if (item.children && item.children.length > 0) {
       route.children = buildRoutes(item.children)
     }
@@ -33,6 +34,8 @@ function buildRoutes(menuList) {
   })
   return res
 }
+
+
 
 export const usePermissionStore = defineStore('permission', {
   state() {

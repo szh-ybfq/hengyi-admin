@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <div >欢迎您成为尊贵的梅赛德斯‑奔驰车主</div>
+    <div style="font-size: 75px; color: #333;">欢迎您成为尊贵的梅赛德斯‑奔驰车主</div>
     <span></span> 
     <span></span> 
     <span></span> 

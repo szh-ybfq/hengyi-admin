@@ -71,15 +71,15 @@
 
     <!-- 分配菜单弹窗 -->
     <el-dialog v-model="assignMenuDialogVisible" title="分配菜单" width="620px">
-      <p>角色：{{currentRow?.roleName}}</p>
+      <p>角色：{{ currentRow?.roleName }}</p>
       <el-form label-width="80px">
         <el-form-item label="分配菜单">
-          <!-- 多选select，和菜单页面上级菜单风格统一，空格缩进模拟树 -->
           <el-select
             v-model="assignMenuIdList"
             multiple
             placeholder="请分配菜单权限"
             style="width:100%"
+            v-if="assignFlatMenuOptions?.length > 0"
           >
             <el-option
               v-for="item in assignFlatMenuOptions"
@@ -88,10 +88,11 @@
               :value="item.id"
             />
           </el-select>
+          <span v-else>菜单加载中...</span>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="assignMenuDialogVisible=false">取消</el-button>
+        <el-button @click="assignMenuDialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitAssignMenu">保存分配</el-button>
       </template>
     </el-dialog>
