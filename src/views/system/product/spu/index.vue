@@ -120,51 +120,53 @@
               accept="image/*"
             >
               <template #file="{ file, index }">
+              <div
+                class="picture-card-item"
+                style="position: relative; "
+              >
+                <img
+                  :src="file.url"
+                  style="object-fit:object-cover; width: 100%; height: 100%"
+                />
+                <!-- 上传成功标记 绿色对勾 -->
+                <div v-if="file.bizUrl" class="upload-ok-mark">✓</div>
+                <!--放大预览按钮-->
                 <div
-                  class="picture-card-item"
-                  style="position: relative; "
+                  @click.stop="openImagePreview(detailFileList, file)"
+                  style="
+                    position: absolute;
+                    left: 2px;
+                    top: 2px;
+                    cursor: pointer;
+                    background: #0008;
+                    color: white;
+                    padding: 0 3px;
+                    font-size: 12px;
+                  "
                 >
-                  <img
-                    :src="file.url"
-                    style="object-fit:object-cover; width: 100%; height: 100%"
-                  />
-                  <!--放大预览按钮-->
-                  <div
-                    @click.stop="openImagePreview(detailFileList, file)"
-                    style="
-                      position: absolute;
-                      left: 2px;
-                      top: 2px;
-                      cursor: pointer;
-                      background: #0008;
-                      color: white;
-                      padding: 0 3px;
-                      font-size: 12px;
-                    "
-                  >
-                    🔍
-                  </div>
-                  <!--删除按钮-->
-                  <div
-                    @click.stop="handleDetailDelete(file)"
-                    style="
-                      position: absolute;
-                      right:2px;
-                      top: 2px;
-                      cursor: pointer;
-                      background: #0008;
-                      color: white;
-                      padding: 0 4px;
-                    "
-                  >
-                    ×
-                  </div>
-                  
+                  🔍
                 </div>
+                <!--删除按钮-->
+                <div
+                  @click.stop="handleDetailDelete(file)"
+                  style="
+                    position: absolute;
+                    right:2px;
+                    top: 2px;
+                    cursor: pointer;
+                    background: #0008;
+                    color: white;
+                    padding: 0 4px;
+                  "
+                >
+                  ×
+                </div>
+              </div>
               </template>
-              <el-icon>+</el-icon>
+                <el-icon>+</el-icon>
             </el-upload>
             <el-button type="primary" @click="doBatchUpload('GOODS_DETAILS')"
+              :disabled="!hasDetailNewFile"
               >确认批量上传</el-button
             >
           </div>
@@ -189,6 +191,8 @@
                     :src="file.url"
                     style="width: 100%; height: 100%; object-fit: cover"
                   />
+                  <!-- 上传成功标记 绿色对勾 -->
+                  <div v-if="file.bizUrl" class="upload-ok-mark">✓</div>
                   <!--放大预览按钮-->
                   <div
                     @click.stop="openImagePreview(paramFileList, file)"
@@ -220,16 +224,17 @@
                   >
                     ×
                   </div>
-                  
                 </div>
               </template>
-              <el-icon>+</el-icon>
+                <el-icon>+</el-icon>
             </el-upload>
             <el-button type="primary" @click="doBatchUpload('GOODS_PARAMS')"
+              :disabled="!hasParamNewFile"
               >确认批量上传</el-button
             >
           </div>
         </el-form-item>
+
 
         <el-form-item label="商品描述">
           <el-input v-model="form.spuDescription" type="textarea"></el-input>
@@ -291,8 +296,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from "vue";
+import { ref, reactive, onMounted, nextTick , computed } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
+
 // 替换接口：使用分类树接口，移除getCategoryOption
 import {
   getSpuPage,
@@ -462,6 +468,10 @@ async function openDialog(row) {
 async function customUpload(options, fileType) {
   const file = options.file;
   const formData = new FormData();
+  //编辑时才传（同步入库），新增不用传（仅入oss），直接使用已有的spuId
+  if(form.id != null){ 
+    formData.append("spuId", form.id);
+  }
   formData.append("file", file);
   formData.append("fileType", fileType);
   try {
@@ -500,58 +510,71 @@ async function doBatchUpload(fileType) {
   } else if (fileType === "GOODS_PARAMS") {
     fileList = paramFileList.value;
   }
-
   if (!fileList || fileList.length === 0) {
     ElMessage.warning("请先选择至少一张图片！");
     return;
   }
+  // =========新增校验逻辑 start=========
+  // 判断是否存在新选本地图片（有raw代表本地未上传文件；回显老图片没有raw）
+  const hasNewLocalFile = fileList.some(item => !!item.raw);
+  if (!hasNewLocalFile) {
+    ElMessage.warning("没有选择新图片，无需执行批量上传");
+    return;
+  }
+  // =========新增校验逻辑 end=========
 
-  // 2、将预览文件列表 转换为 FormData形参 进行批量上传，解决 el-upload 组件不支持批量上传的问题
+  // 2、将预览文件列表 转换为 FormData形参 进行批量上传，解决 el‑upload 组件不支持批量上传的问题
   const formData = new FormData();
+  //编辑时才传（同步入库），新增不用传（仅入oss），直接使用已有的spuId
+  if(form.id != null){
+    console.log("批量上传时，传入spuId：", form.id);
+    formData.append("spuId", form.id);
+  }
+  //⚠️注意！这里循环只把有raw的图片塞formData！老回显图片没有raw，不要往formData塞！！这个是很重要bug修复！
   for (const item of fileList) {
     if (item.raw) {
       formData.append("file", item.raw);
     }
   }
   formData.append("fileType", fileType);
-
   try {
     const res = await uploadImages(formData);
     console.log("批量上传结果：", res);
     if (res.code === 200) {
       const batchResult = res.data;
-
       if (fileType === "GOODS_DETAILS") {
         // 防止detailImgList为undefined，导致push报错
-        if (!form.detailImgList) {
-          form.detailImgList = []
-        }
+        // 注意：不能直接清空！！❗❗❗ 这里原来逻辑form.detailImgList = []会把老图片url全部清空，严重bug！
+        // 只把新上传回来url追加到老数组，不要覆盖清空
         form.detailImgList.push(...batchResult.successUrlList);
         batchResult.successUrlList.forEach((url, index) => {
-          const fileItem = detailFileList.value[index]; // ref 一定要 .value
+          //⚠️注意：只遍历【有raw的那些图片】索引映射，简单forEach按顺序依赖，前提：formData里面顺序和fileList里面new文件顺序一致
+          //方案：过滤出带raw的文件列表，做一一对应
+          const newFileArr = fileList.filter(i => !!i.raw);
+          const fileItem = newFileArr[index];
           if (fileItem) {
-            //防止undefined
             fileItem.bizUrl = url;
+            fileItem.raw = null; //✅新增，清空raw
           }
         });
+        // 强制更新引用，触发el‑upload重新渲染插槽
+        detailFileList.value = [...detailFileList.value];
         console.log("上传后：detailImgList", form.detailImgList);
         console.log("上传后：detailFileList", detailFileList);
       } else if (fileType === "GOODS_PARAMS") {
-        // 防止paramImgList为undefined，导致push报错
-        if (!!form.paramImgList) {
-          form.paramImgList = []
-        }
-        form.paramImgList.push(...batchResult.successUrlList);
-        batchResult.successUrlList.forEach((url, index) => {
-          const fileItem = paramFileList.value[index];
-          if (fileItem) {
-            fileItem.bizUrl = url;
-          }
-        });
+          form.paramImgList.push(...batchResult.successUrlList);
+          batchResult.successUrlList.forEach((url, index) => {
+            const newFileArr = fileList.filter(i => !!i.raw);
+            const fileItem = newFileArr[index];
+            if (fileItem) {
+              fileItem.bizUrl = url;
+              fileItem.raw = null; //✅新增，清空raw
+            }
+          });
+          paramFileList.value = [...paramFileList.value];
         console.log("上传后：paramImgList", form.paramImgList);
         console.log("上传后：paramFileList", paramFileList);
       }
-
       if (batchResult.failCount > 0) {
         ElMessage.warning(`部分图片上传失败：${batchResult.failMsg}`);
       } else {
@@ -565,6 +588,16 @@ async function doBatchUpload(fileType) {
     ElMessage.error("网络异常，批量上传失败");
   }
 }
+
+//详情图是否存在未上传本地新文件(有raw代表待上传)
+const hasDetailNewFile = computed(()=>{
+  return detailFileList.value.some(item => !!item.raw);
+})
+//参数图是否存在未上传本地新文件
+const hasParamNewFile = computed(()=>{
+  return paramFileList.value.some(item => !!item.raw);
+})
+
 
 //图片放大预览
 function openImagePreview(fileList, clickFile) {
@@ -581,6 +614,12 @@ function openImagePreview(fileList, clickFile) {
 
 //删除商品主图，先调用删除接口，成功再移除前端数组
 async function onMainImgRemove(index) {
+  // 删除之后的预期长度
+  const expectLen = form.mainImgList.length - 1;
+  if(expectLen <= 0){
+    ElMessage.warning("商品主图至少保留一张，不允许全部删除");
+    return;
+  }
   const url = form.mainImgList[index];
   try {
     await deleteImage(url);
@@ -596,13 +635,13 @@ async function onMainImgRemove(index) {
 
 /*详情图片点击删除（el‑upload @remove回调）*/
 async function handleDetailDelete(file) {
-  // 判断：业务表单form.detailImgList里面是否包含这个图片对应的oss url
-  // ⚠重点问题：现在file对象不知道oss url！！file.url还可能是blob！
-  // 现状：detailFileList的file对象没有存oss url！！
-
-  // 👉方案A思路：上传成功之后，我们把oss url挂到file自定义属性，例如 `file.bizUrl = ossUrl`
-  // 修改doBatchUpload，循环返回的successUrlList，一一给detailFileList对应项增加bizUrl自定义属性
   if (file.bizUrl) {
+    // 校验：删掉这一张之后详情图是否为空
+    const expectLen = form.detailImgList.length - 1;
+    if(expectLen <= 0){
+      ElMessage.warning("商品详情图至少保留一张，不允许全部删除");
+      return;
+    }
     //存在业务url，代表已经上传oss
     await deleteImage(file.bizUrl);
     //删除业务数组
@@ -624,6 +663,12 @@ async function handleDetailDelete(file) {
 /*参数图片点击删除（el‑upload @remove回调）*/
 async function handleParamDelete(file) {
   if (file.bizUrl) {
+    //校验：删除后参数图不能为空
+    const expectLen = form.paramImgList.length - 1;
+    if(expectLen <= 0){
+      ElMessage.warning("商品参数图至少保留一张，不允许全部删除");
+      return;
+    }
     await deleteImage(file.bizUrl);
     const idx = form.paramImgList.findIndex((u) => u === file.bizUrl);
     if (idx > -1) {
@@ -645,7 +690,10 @@ async function submitForm() {
   await nextTick();
   if (!spuFormRef.value) return;
   try {
-    // 表单校验（现在包含分类必填）
+
+    
+
+    // 表单校验（基础校验，现在包含分类必填）
     await spuFormRef.value.validate();
 
     if (form.mainImgList.length === 0) {
@@ -789,7 +837,7 @@ onMounted(() => {
 .upload-ok-mark {
   position: absolute;
   top: 4px;
-  right: 4px;
+  right: 24px; /*避开右上角删除按钮，不要和×重叠！重点！原来right:4px会跟删除按钮打架*/
   background: #67c23a;
   color: #fff;
   width: 20px;
@@ -799,4 +847,5 @@ onMounted(() => {
   line-height: 20px;
   font-size: 14px;
 }
+
 </style>
