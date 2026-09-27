@@ -256,14 +256,14 @@ export function delSpu(id) {
 // 6 后台文件管理
 export function uploadImage(data) {
   return request({
-    url: `/admin/api/v1/file/upload/image`,
+    url: `/admin/api/v1/product/spu/upload/image`,
     method: 'post',
     data
   })
 }
 export function uploadImages(data) {
   return request({
-    url: `/admin/api/v1/file/upload/images`,
+    url: `/admin/api/v1/product/spu/upload/images`,
     method: 'post',
     data
   })

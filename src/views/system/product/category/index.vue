@@ -195,7 +195,7 @@ async function submitForm() {
 }
 
 async function handleDelete(row) {
-  ElMessageBox.confirm('确定删除该分类？会校验子分类与商品引用！','提示',{type:'warning'})
+  ElMessageBox.confirm('确定删除该分类？将校验其子分类与商品引用','提示',{type:'warning'})
   .then(async ()=>{
     try {
       await delCategory(row.id)

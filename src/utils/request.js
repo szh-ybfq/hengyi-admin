@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-
+import router from '@/router'
 // 后端基础地址
 const baseUrl = ''
 
